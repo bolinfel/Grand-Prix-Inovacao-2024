@@ -1,0 +1,28 @@
+{% extends "master.html" %}
+
+{% block content %}
+
+<h1>Alertas</h1>
+
+    <table class="table table-hover table-bordered table-striped" border="1">
+        <thead>
+            <tr>
+                <th>Sensor</th>
+                <th>Valor A</th>
+                <th>Valor B</th>
+                <th>Data da Leitura</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for leitura in leituras %}
+                <tr>
+                    <td>{{ leitura.FK_Sensor }}</td>
+                    <td>{{ leitura.ValorA }}</td>
+                    <td>{{ leitura.ValorB }}</td>
+                    <td>{{ leitura.Data }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
