@@ -2,6 +2,124 @@
 
 {% block content %}
 
-<h1>Monitoramento</h1>
+<div class="container my-4">
+    <h1 class="mb-4">Gráfico de Leituras do Sensor</h1>
+
+    <!-- Seção de Cards para Últimos Valores dos Sensores -->
+    <div class="row mb-4">
+        {% for sensor_id, leitura in ultimas_leituras.items %}
+        <div class="col-md-3 mb-3">
+            <div class="card sensor-card shadow-sm" data-sensor-id="{{ sensor_id }}">
+                <div class="card-body">
+                    <h5 class="card-title">Sensor: {{ leitura.sensor }}</h5>
+                    <p class="card-text"><strong>Último Valor A:</strong> {{ leitura.valorA | floatformat:-3 }}</p>
+                    <p class="card-text"><strong>Último Valor B:</strong> {{ leitura.valorB | floatformat:-3 }}</p>
+                    <p class="card-text"><strong>Data:</strong> {{ leitura.data|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Gráfico -->
+    <div class="card">
+        <div class="card-body">
+            <h2 id="sensor-title" class="mb-3">Leituras do Sensor</h2>
+            <canvas id="graficoLeituras" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Script para AJAX e Atualização do Gráfico -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let chart;
+
+        // Função para renderizar o gráfico
+        function renderChart(datas, valoresA, valoresB, sensorName) {
+            const ctx = document.getElementById('graficoLeituras').getContext('2d');
+            if (chart) {
+                chart.destroy();
+            }
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: datas,
+                    datasets: [
+                        {
+                            label: 'Valor A',
+                            data: valoresA,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderWidth: 1,
+                            fill: true
+                        },
+                        {
+                            label: 'Valor B',
+                            data: valoresB,
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                            borderWidth: 1,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Data da Leitura'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Valor'
+                            }
+                        }
+                    }
+                }
+            });
+            document.getElementById('sensor-title').innerText = 'Leituras do Sensor: ' + sensorName;
+        }
+
+        // Evento de clique para cada card de sensor
+        document.querySelectorAll('.sensor-card').forEach(card => {
+            card.addEventListener('click', function () {
+                const sensorId = this.getAttribute('data-sensor-id');
+                console.log('Card clicado, Sensor ID:', sensorId);
+                fetchSensorData(sensorId);
+            });
+        });
+
+        // Função para buscar os dados do sensor via AJAX
+        function fetchSensorData(sensorId) {
+            fetch("{% url 'monitoramento' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ sensor_id: sensorId })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao buscar dados do sensor.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    console.error(data.error); // Log para erro específico
+                    alert(data.error); // Exibe uma mensagem de alerta
+                } else {
+                    renderChart(data.datas, data.valoresA, data.valoresB, data.sensor_name);
+                }
+            })
+            .catch(error => console.error('Erro:', error));
+        }           
+    </script>
+</div>
 
 {% endblock %}

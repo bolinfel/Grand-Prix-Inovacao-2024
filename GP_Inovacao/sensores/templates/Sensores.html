@@ -2,17 +2,19 @@
 
 {% block content %}
 
-<h1>Sensores Cadastrados</h1>
+<h1>Simulação de sensor</h1>
 
-<form method="post">
+<form class="form" method="post">
     {% csrf_token %}
-    <label for="sensor">Selecione um Sensor:</label>
-    <select name="sensor_id" id="sensor" required>
-        {% for sensor in sensores %}
-            <option value="{{ sensor.id }}">{{ sensor }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit">Simular Leitura</button>
+    <div class="mb-3">
+        <label class="form-label" for="sensor">Selecione um Sensor:</label>
+        <select class="form-select" name="sensor_id" id="sensor" required>
+            {% for sensor in sensores %}
+                <option value="{{ sensor.id }}">{{ sensor }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Simular Leitura</button>
 </form>
 
 {% endblock %}
